@@ -20,23 +20,25 @@ Bundler.require(*Rails.groups)
 
 module MediaLibrary
   class Application < Rails::Application
-    # Initialize configuration defaults for originally generated Rails version.
-    config.load_defaults 8.1
+    config.middleware.use Rack::Attack
 
-    # Please, add to the `ignore` list any other `lib` subdirectories that do
-    # not contain `.rb` files, or that should not be reloaded or eager loaded.
-    # Common ones are `templates`, `generators`, or `middleware`, for example.
-    config.autoload_lib(ignore: %w[assets tasks])
+    # CORS pour API
+    config.middleware.insert_before 0, Rack::Cors do
+      allow do
+        origins ENV.fetch("ALLOWED_ORIGINS", "localhost:3000")
+        resource "*", headers: :any, methods: [:get, :post, :put, :delete, :options]
+      end
+    end
 
-    # Configuration for the application, engines, and railties goes here.
-    #
-    # These settings can be overridden in specific environments using the files
-    # in config/environments, which are processed later.
-    #
-    # config.time_zone = "Central Time (US & Canada)"
-    # config.eager_load_paths << Rails.root.join("extras")
+    # Force SSL en production
+    config.force_ssl = true if Rails.env.production?
 
-    # Don't generate system test files.
-    config.generators.system_tests = nil
+    # Headers de sécurité
+    config.action_dispatch.default_headers = {
+      "X-Frame-Options"        => "SAMEORIGIN",
+      "X-XSS-Protection"       => "1; mode=block",
+      "X-Content-Type-Options" => "nosniff",
+      "Referrer-Policy"        => "strict-origin-when-cross-origin"
+    }
   end
 end
