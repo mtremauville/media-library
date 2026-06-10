@@ -10,9 +10,47 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_06_10_205358) do
+ActiveRecord::Schema[8.1].define(version: 2026_06_10_211024) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
+
+  create_table "episodes", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.integer "duration"
+    t.integer "episode_number"
+    t.bigint "media_item_id", null: false
+    t.integer "season_number"
+    t.text "synopsis"
+    t.string "thumbnail_url"
+    t.string "title"
+    t.datetime "updated_at", null: false
+    t.index ["media_item_id"], name: "index_episodes_on_media_item_id"
+  end
+
+  create_table "media_items", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.string "external_id"
+    t.string "media_type"
+    t.jsonb "metadata"
+    t.string "poster_url"
+    t.decimal "rating"
+    t.date "release_date"
+    t.text "synopsis"
+    t.string "title"
+    t.datetime "updated_at", null: false
+    t.bigint "user_id", null: false
+    t.index ["user_id"], name: "index_media_items_on_user_id"
+  end
+
+  create_table "tracks", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.integer "duration"
+    t.bigint "media_item_id", null: false
+    t.string "title"
+    t.integer "track_number"
+    t.datetime "updated_at", null: false
+    t.index ["media_item_id"], name: "index_tracks_on_media_item_id"
+  end
 
   create_table "users", force: :cascade do |t|
     t.string "avatar_url"
@@ -30,4 +68,8 @@ ActiveRecord::Schema[8.1].define(version: 2026_06_10_205358) do
     t.index ["provider", "uid"], name: "index_users_on_provider_and_uid", unique: true
     t.index ["reset_password_token"], name: "index_users_on_reset_password_token", unique: true
   end
+
+  add_foreign_key "episodes", "media_items"
+  add_foreign_key "media_items", "users"
+  add_foreign_key "tracks", "media_items"
 end
